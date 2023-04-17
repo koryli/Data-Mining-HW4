@@ -1,10 +1,25 @@
 # Homework 4
 
+## Q1
 
+For both PCA and clustering algorithm of 11 chemical properties can distinguish the reds from the whites, as the graphs shows. 
 
+### PCA
 
+For PCA I choose pc1 and pc2 because it can explain 0.932 of the total compositon. And the graph shows that we can distinguish clearly the reds from the whites.
+But it's hard for us to distinguish wine quality with PCA.
 
+![image](https://user-images.githubusercontent.com/123716487/232603382-be5822e9-7670-4300-8a97-9a2d1c6d2d54.png)
 
+![image](https://user-images.githubusercontent.com/123716487/232603554-05c9d931-0229-41b9-8327-d3a467780452.png)
+
+### Clustering
+
+For clustering algorithm, I use k_mean in clustering, and I use code to find the best number of cluster which is two. Then I draw the graph, it shows that we can roughly distinguish wine color with cluster, but there still some point which locate in cluster2 but the color is white. Also it's hard for us to distinguish wine quality with cluster.
+
+![image](https://user-images.githubusercontent.com/123716487/232604994-0a091c20-2f7b-40c8-9eb6-4e24903f211b.png)
+
+![image](https://user-images.githubusercontent.com/123716487/232605107-abefacb7-6f26-4493-8add-a2acb14fa425.png)
 
 
 ## Q2: Market segmentation
