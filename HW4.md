@@ -8,7 +8,7 @@
 
 In order to analyze the data intuitively, we first calculate the frequency of each category in every user's tweet so that the data can be normalized.
 
-http://127.0.0.1:55986/chunk_output/FDEC71DFE78BBEFA/F1994CE5/c4rgkd4bm9kds/000010.png
+![image](https://user-images.githubusercontent.com/123770080/232599887-8ce7da2b-852b-4f52-a92a-d0e653f52b4d.png)
 
 # outlier removal
 
