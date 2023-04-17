@@ -205,6 +205,14 @@ there are 85 rules left.
 
 We can see if a person buys red wine, they are more likely to buy other wines. If a person buys vegetables, they are also more likely to buy other vegetables. This is the routine operation of a person who comes to the groceries with a purpose and a preference.
 
+{rolls/buns,shopping bags}=> {sausage}   
+{beef} => {root vegetables} 
+{root vegetables}=> {beef}
+{ham}=> {white bread} 
+{white bread} => {ham}              
+{sliced cheese}  => {sausage}          
+{berries} => {whipped/sour cream}
+
 There are also some interesting rules that can be treated as recipes: If someone buys rolls,buns and shopping bags, they are likely to buy sausage, and what we said above: beef and potato(root vegetable), Berries with sour cream, chocolate waffles...We can come up with recipes that people like to eat, according to these rules.
 
 
