@@ -1,6 +1,6 @@
 # Homework 4
 
-## Q1
+## Q1 Clustering and PCA
 
 For both PCA and clustering algorithm of 11 chemical properties can distinguish the reds from the whites, as the graphs shows. 
 
