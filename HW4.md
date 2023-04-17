@@ -30,10 +30,9 @@ To classify and analyze better, we check some categories which are strongly corr
 
 The categories that make the cutoff above the certain value:
 
-Screen Shot 2023-04-17 at 3.11.35 PM
-Screen Shot 2023-04-17 at 3.10.43 PM
+<img width="242" alt="Screen Shot 2023-04-17 at 3 11 35 PM" src="https://user-images.githubusercontent.com/123770080/232600006-5687b423-28b1-4270-93c8-8ed50e6e6cda.png">
 
-
+<img width="302" alt="Screen Shot 2023-04-17 at 3 10 43 PM" src="https://user-images.githubusercontent.com/123770080/232600067-f6b0dd85-32e3-4d6a-b340-23bdb4e4a001.png">
 
 
 
