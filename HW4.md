@@ -197,6 +197,7 @@ The two key plot indicates that when the order increases, the support increases 
 
 We want some more useful results, so we choose a relatively high confidence and support to include the item rules that are general and highly corralated 
 These rule contains the items that are relatively bought frequently and they have high relationship. 
+
 In these rules, we can even imagine the most popular dishes from these products. Like beef stew with potatoes, berries dipped in sour cream. But most of the rules are still not so interesting in my opinion, because they are too common.
 
 We lower the support, just like what we do the above
@@ -205,12 +206,18 @@ there are 85 rules left.
 
 We can see if a person buys red wine, they are more likely to buy other wines. If a person buys vegetables, they are also more likely to buy other vegetables. This is the routine operation of a person who comes to the groceries with a purpose and a preference.
 
-{rolls/buns,shopping bags}=> {sausage}   
+{rolls/buns,shopping bags}=> {sausage}  
+
 {beef} => {root vegetables} 
+
 {root vegetables}=> {beef}
+
 {ham}=> {white bread} 
-{white bread} => {ham}              
-{sliced cheese}  => {sausage}          
+
+{white bread} => {ham}        
+
+{sliced cheese}  => {sausage}   
+
 {berries} => {whipped/sour cream}
 
 There are also some interesting rules that can be treated as recipes: If someone buys rolls,buns and shopping bags, they are likely to buy sausage, and what we said above: beef and potato(root vegetable), Berries with sour cream, chocolate waffles...We can come up with recipes that people like to eat, according to these rules.
