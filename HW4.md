@@ -85,7 +85,7 @@ KNN for 3, 4, 5, 6 clusters:
 
 PCA: 
 
-Component 1
+Component 1:
 
 [1] "religion"      "sports_fandom" "parenting"     "food"          "school"       
 [1] "personal_fitness" "fashion"          "health_nutrition" "photo_sharing"   
