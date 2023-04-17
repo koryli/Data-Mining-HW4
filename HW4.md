@@ -150,10 +150,62 @@ Family, school and food also fall in this cluster.
 
 This demographic is likely to prioritize health and nutrition, so the company could highlight the nutritional value of the beverage, such as its vitamins or antioxidants, could be an effective approach. Then, the company could sponsor events related to parenting, religion, sports, school, or food. For example, they could sponsor youth sports teams or religious conferences. 
 
+##  Q3
 
+To get the rules that make sense:
 
+First, we may have the concept of "lift","support" and "confidence"
 
+Support: This measures how frequently the items in the rule appear together as a percentage of all transactions. For example, if the support for a rule {beer} -> {red wine} is 0.05, it means that 5% of all transactions contain beer and red wine together.
 
+Confidence: This measures the proportion of transactions containing the antecedent (left-hand-side) of the rule that also contain the consequent (right-hand-side). For example, if the confidence for a rule {beer} -> {red wine} is 0.6, it means that 60% of the transactions containing beer also contain red wine.
+
+Lift: This measures the strength of the association between the antecedent and the consequent, taking into account the support of both the antecedent and the consequent. A lift value of 1 indicates no association, while a value greater than 1 indicates a positive association, and a value less than 1 indicates a negative association. For example, if the lift for a rule {beer} -> {red wine} is 2.0, it means that beer are twice as likely to be purchased with red wine than they would be if there were no association between the items.
+
+### Top 30 rules sorted by lift
+![image](https://user-images.githubusercontent.com/112587000/232615690-9aa1a848-08bc-4fb2-a7ae-9fa93cab96a7.png)
+
+It's not clear enough to see the rules that most make-sense.
+
+First of all, sort the rules by confidence
+
+![image](https://user-images.githubusercontent.com/112587000/232615964-61974e71-3bc9-43ad-bac2-1a9f2646ca67.png)
+
+The rhs with the highest confidence were all whole milk. That means the people who come to buy food at the groceries will tend to buy milk.
+
+Next, sort the rules by lift
+
+![image](https://user-images.githubusercontent.com/112587000/232616152-2649e9e0-9a70-4891-968b-ea1e0f9e0f7b.png)
+
+We can see good complements here: white bread and ham are very likely to be eaten together
+
+![image](https://user-images.githubusercontent.com/112587000/232616203-5980affe-e559-4e0d-aef3-d1b0780de043.png)
+
+while whole milk is the most frequent item, so the rules with whole milk may not have much informations because most people will buy it no matter they buy what other items.
+
+![image](https://user-images.githubusercontent.com/112587000/232616303-7b280ed3-3c20-4a5d-adb5-810288a8cb9d.png)
+
+![image](https://user-images.githubusercontent.com/112587000/232616320-40f61caf-40fc-4fff-be0c-7be564ea110c.png)
+
+We can see that there is a negative relationship between support and lift.
+
+![image](https://user-images.githubusercontent.com/112587000/232616360-57fadd9c-97cf-4937-afe9-c4ede851225b.png)
+
+The two key plot indicates that when the order increases, the support increases and confidence decreases.
+
+![image](https://user-images.githubusercontent.com/112587000/232616506-1f2f5f50-f84b-4baa-8607-358cc1317de1.png)
+
+We want some more useful results, so we choose a relatively high confidence and support to include the item rules that are general and highly corralated 
+These rule contains the items that are relatively bought frequently and they have high relationship. 
+In these rules, we can even imagine the most popular dishes from these products. Like beef stew with potatoes, berries dipped in sour cream. But most of the rules are still not so interesting in my opinion, because they are too common.
+
+We lower the support, just like what we do the above
+
+there are 85 rules left.
+
+We can see if a person buys red wine, they are more likely to buy other wines. If a person buys vegetables, they are also more likely to buy other vegetables. This is the routine operation of a person who comes to the groceries with a purpose and a preference.
+
+There are also some interesting rules that can be treated as recipes: If someone buys rolls,buns and shopping bags, they are likely to buy sausage, and what we said above: beef and potato(root vegetable), Berries with sour cream, chocolate waffles...We can come up with recipes that people like to eat, according to these rules.
 
 
 
