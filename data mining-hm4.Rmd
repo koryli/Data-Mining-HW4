@@ -1,0 +1,444 @@
+---
+title: "data mining-hm4"
+output: html_document
+date: "2023-04-17"
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(lattice)
+library(grid)
+library(gridExtra)
+library(mosaic)
+install.packages("quantmod")
+library(quantmod)
+library(png)
+library(stringr)
+library(arules)
+library(arulesViz)
+set.seed(1)
+
+library(foreach)
+library(mosaic)
+
+```
+
+
+
+## Q1
+
+```{r}
+wine = read.csv(file = "wine.csv" , header = T)
+Z = wine[,c(1:11)]
+Z = scale(Z, center=TRUE, scale=TRUE)
+Z.pca = prcomp(Z)
+loadings = Z.pca$rotation
+scores = Z.pca$x
+summary(Z.pca)
+qplot(scores[,1],scores[,2], color=wine$color, xlab='Component 1', ylab='Component 2')
+qplot(scores[,1],scores[,2], color=wine$quality, xlab='Component 1', ylab='Component 2')
+
+o1 = order(loadings[,1], decreasing=TRUE)
+colnames(Z)[head(o1,25)]
+colnames(Z)[tail(o1,25)]
+
+o2 = order(loadings[,2], decreasing=TRUE)
+colnames(Z)[head(o2,25)]
+colnames(Z)[tail(o2,25)]
+```
+```{r}
+library(tidyverse)
+library(ClusterR)  # for kmeans++
+library(foreach)
+library(mosaic)
+
+X = wine[,c(1:11)]
+X = scale(X, center=TRUE, scale=TRUE)
+
+mu = attr(X,"scaled:center")
+sigma = attr(X,"scaled:scale")
+
+clusGap(X, FUNcluster = kmeans, K.max = 10, B=5 ,nstart = 50)
+cat("Variables in Cluster 1:", paste(cluster1_vars, collapse = ", "), "\n")
+gap_stat <- clusGap(data, FUN = kmeans, nstart = 25, K.max = 10)
+
+clust1 = kmeans(X, 2, nstart=25)
+
+qplot(scores[,1],scores[,2],shape=factor(clust1$cluster), color = wine$color)
+qplot(scores[,1],scores[,2],shape=factor(clust1$cluster), color = wine$quality)
+```
+For both PCA and clustering algorithm of 11 chemical properties can distinguish the reds from the whites, as the graphs shows. 
+For PCA I choose pc1 and pc2 because it can explain 0.932 of the total compositon. And the graph shows that we can distinguish clearly the reds from the whites.
+But it's hard for us to distinguish wine quality with PCA.
+
+For clustering algorithm, I use k_mean in clustering, and I use code to find the best number of cluster which is two. Then I draw the graph, it shows that we can roughly distinguish wine color with cluster, but there still some point which locate in cluster2 but the color is white. Also it's hard for us to distinguish wine quality with cluster.
+
+
+
+## Q2: Market segmentation
+
+# pre-process the data
+
+```{r}
+sm <- read.csv("~/Desktop/ECO395M-master/data/social_marketing.csv", row.names=1)
+
+head(sm)
+nrow(sm)
+ncol(sm)
+kable(sort(colnames(sm)))
+
+```
+
+# data normalization
+
+In order to analyze the data intuitively, we first calculate the frequency of each category in every user's tweet so that the data can be normalized.
+
+```{r}
+sm_freq = sm/rowSums(sm)
+head(sm_freq,5)
+
+```
+
+```{r}
+hist(rowSums(sm), main = "Number of tweets by user", xlab = "Number of tweets")
+
+```
+
+# outlier removal
+
+We also remove 4 unwanted categories: chatter, adult, spam and uncategorized. Because categorized and spam tweets will interfere with our analysis of other data. Adult and spam tweets are what we don't want to include in our clusters.
+
+(1) Chatter
+
+```{r}
+chatter_outlier = c()
+
+for(i in seq(0.15, 0.4, 0.05)){
+  chatter_outlier = rbind(chatter_outlier,nrow(sm_freq%>%filter(chatter>i))*100/nrow(sm_freq))
+    }
+category_chatter_outlier = data.frame(cbind(seq(15,40,5),chatter_outlier))
+colnames(category_chatter_outlier) <- c("TF_Chatter", "% Data")
+kable(category_chatter_outlier)
+
+
+```
+
+(2) adult
+
+```{r}
+adult_outlier = c()
+for(i in seq(0.1,0.5,0.05)){
+    adult_outlier = rbind(adult_outlier,nrow(sm_freq%>%filter(adult>i))*100/nrow(sm_freq))
+    }
+category_adult_outlier = data.frame(cbind(seq(10,50,5),adult_outlier))
+colnames(category_adult_outlier)  <- c("TF_Adult", "% Data")
+kable(category_adult_outlier)
+
+
+```
+
+(3) spam
+
+```{r}
+spam_outlier = c()
+for(i in seq(0.01,0.15,0.05)){
+    spam_outlier = rbind(spam_outlier,nrow(sm_freq%>%filter(spam>i))*100/nrow(sm_freq))
+    }
+category_spam_outlier = data.frame(cbind(seq(1,15,5),spam_outlier))
+colnames(category_spam_outlier)  <- c("TF_Spam", "% Data")
+kable(category_spam_outlier)
+```
+
+(4) uncategorized
+
+```{r}
+uncategorized_outlier = c()
+for(i in seq(0.1,0.4,0.03)){
+    uncategorized_outlier = rbind(uncategorized_outlier,nrow(sm_freq%>%filter(uncategorized>i))*100/nrow(sm_freq))
+    }
+category_uncategorized_outlier = data.frame(cbind(seq(10,40,3),uncategorized_outlier))
+colnames(category_uncategorized_outlier)  <- c("TF_Uncat", "% Data")
+kable(category_uncategorized_outlier)
+```
+
+Removing rows: 
+
+```{r}
+sm_clean <- sm_freq
+sm_clean <- sm_clean%>%filter(chatter<0.25)%>%filter(adult<0.20)%>%filter(spam<0.01)%>%filter(uncategorized<0.16)
+nrow(sm_clean)/nrow(sm_freq)
+
+```
+
+## Correlated categories
+
+To classify and analyze better, we check some categories which are strongly correlated. 
+
+The categories that make the cutoff above the certain value:
+
+```{r}
+high_cor = c()
+cor_sm = data.frame(as.table(cor(sm)))
+for(i in seq(0.5,0.9,0.05)){
+  
+  
+  high_cor = rbind(high_cor,nrow(cor_sm%>%filter(Freq>i)%>%filter(Var1!=Var2)))
+}
+
+sm_high_cor = data.frame(cbind(seq(0.5,0.9,0.05),high_cor/2))
+colnames(sm_high_cor)  <- c("Correlation Cutoff","Pair Counts")
+kable(sm_high_cor)
+```
+
+```{r}
+kable(cor_sm%>%filter(Freq>0.6)%>%filter(Var1!=Var2)%>%arrange(desc(Freq))%>%distinct(Freq, .keep_all=TRUE))
+```
+
+We select the correlation that is more than 0.6 and we think there can be 11 pairs to compare.
+Here are several cluster we will focus:
+
+1. Health lifestyle
+
+Personal_fitness & health_nutrition. This pair has the highest correlation. And health_nutrition and outdoors also have a high correlation of 0.608. Thus, the first cluster is about people who care about health. 
+
+2. college_uni & online_gaming
+
+This pair has a very high correlation of 0.773, which should be of interest to college students.
+
+3. Fashions
+
+Beauty, cooking and fashion are very correlated with each other. These people will pursue a more fashionable and exquisite life.
+
+4. politics & travel
+
+Maybe people who like traveling and socializing will fall in this cluster.
+
+5. parenting, religion & sports_fandom
+
+The people who care about these things seem at the middle age.
+
+
+# clustering by KNN
+
+```{r}
+sc_mkt = scale(sm_clean, center=TRUE, scale=TRUE) # cluster on measurables
+k_grid = seq(2, 20, by=1)
+SSE_grid = foreach(k = k_grid, .combine='c') %do% {
+  cluster_k = kmeans(sc_mkt, k, nstart=50)
+  cluster_k$tot.withinss
+}
+
+
+plot(k_grid, SSE_grid, xlab = "K")
+
+```
+
+Because there is no clear result. Then, we will use k range from 3 to 6 to cluster, which can help classify the groups based on tweets preferences.
+
+```{r}
+clust3 = kmeans(sc_mkt, 3, nstart=50)
+clust4 = kmeans(sc_mkt, 4, nstart=50)
+clust5 = kmeans(sc_mkt, 5, nstart=50)
+clust6 = kmeans(sc_mkt, 6, nstart=50)
+
+```
+
+# PCA
+
+```{r}
+pc2 = prcomp(sm_clean, scale=TRUE, rank=2)
+loadings = pc2$rotation
+scores = pc2$x
+
+```
+
+We will only use the first two components.
+
+## PCA & KNN comparison
+
+KNN for 3, 4, 5, 6 clusters:
+
+```{r}
+layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+qplot(scores[,1], scores[,2], color=clust3$cluster, xlab='Component 1', ylab='Component 2', main="3 Clusters")
+```
+
+```{r}
+qplot(scores[,1], scores[,2], color=clust4$cluster, xlab='Component 1', ylab='Component 2', main="4 Clusters")
+
+```
+
+```{r}
+
+qplot(scores[,1], scores[,2], color=clust5$cluster, xlab='Component 1', ylab='Component 2', main="5 Clusters")
+
+```
+
+```{r}
+
+qplot(scores[,1], scores[,2], color=clust6$cluster, xlab='Component 1', ylab='Component 2', main="6 Clusters")
+```
+
+PCA: 
+
+Component 1
+
+```{r}
+
+o1 = order(loadings[,1], decreasing=TRUE)
+colnames(sm_clean)[head(o1,5)]
+colnames(sm_clean)[tail(o1,5)]
+
+```
+
+Component 2:
+```{r}
+o2 = order(loadings[,2], decreasing=TRUE)
+colnames(sm_clean)[head(o2,5)]
+colnames(sm_clean)[tail(o2,5)]
+
+```
+
+C1 & C2:
+```{r}
+{plot(loadings, pch=19, cex=2, col="orange", xlim = c(-0.3,0.5), ylim = c(-0.45,0.3))
+text(loadings, labels=rownames(loadings), cex=0.4, font=1, pos=1)}
+
+```
+
+Based on the graph, the clusters are similar with our assumptions. The following is our customer segmentation of the market and some advice for the drink company.
+
+### 1. Health lifestyle
+
+Personal_fitness & health_nutrition. These two are very close to each other. Outdoors is also close to these two on PC1. They may be fitness enthusiasts, athletes, health coaches, or nutritionists, who are passionate about staying physically fit, maintaining a healthy diet, and enjoying outdoor activities.
+
+The beverage company could focus on promoting the health benefits of their products. For example, if the beverage is low in sugar and calories, high in vitamins and minerals, and made with natural ingredients, the company could highlight these aspects in their advertising to appeal to health-conscious consumers. Also, the company could collaborate with fitness influencers, health coaches, or nutritionists who have a strong social media following among the target audience.
+
+### 2. young college student
+
+Young college students, whose tweets include a lot of college_uni & online_gaming things, also tweet something about shoppping, tv_film.
+
+The company could create a marketing campaign that targets the energy and focus benefits of their product. College/university students and gamers often require sustained energy and focus to get through long study or gaming sessions, and a beverage company could highlight the energizing and focus-enhancing properties of their product.
+
+### 3. Fashions
+
+Beauty, cooking and fashion fall in a young age area where the people who care about healthy life also fall. 
+
+To advertise to these people, the company could create content that appeals to the target audience's interests. For example, they could create recipe videos that feature the beverage as an ingredient or develop a beauty routine that includes the beverage as a refreshing beverage to enjoy during a self-care routine. Besides, they could highlight the hydrating properties of the beverage and how it can help maintain healthy skin.
+
+### 4. People who care about world and current events.
+
+Politics, travel and news fall in one cluster. People who like traveling and socializing seem interested in these topic. 
+
+The company could create a marketing campaign that aligns with the values and interests of the target audience. If the target audience is interested in social justice issues, the company could highlight their commitment to diversity and inclusion. They could create travel guides that highlight local cafes or bars where the beverage is served, or publish articles that discuss the politics of the beverage industry.
+
+### 5. Middle-aged parents
+
+parenting, religion & sports_fandom
+
+Family, school and food also fall in this cluster.
+
+This demographic is likely to prioritize health and nutrition, so the company could highlight the nutritional value of the beverage, such as its vitamins or antioxidants, could be an effective approach. Then, the company could sponsor events related to parenting, religion, sports, school, or food. For example, they could sponsor youth sports teams or religious conferences. 
+
+
+
+# Problem 3: Groceries
+
+```{r}
+groceries <- read.transactions("groceries.txt", sep = ",")
+
+```
+
+```{r}
+# Now run the 'apriori' algorithm
+# Look at rules with support > .005 & confidence >.1 & length (# artists) <= 4
+groceries_rules <- apriori(groceries,
+                 parameter = list(support = 0.005, 
+                                  confidence = 0.1,
+                                  maxlen = 4))
+
+# Look at the output... so many rules! 
+# inspect(groceries_rules) 
+## Choose a subset 
+inspect(subset(groceries_rules, lift > 3))
+```
+
+
+# Top 30 rules sorted by lift
+
+```{r}
+gro_sub = subset(groceries_rules, subset=confidence > 0.01 & support > 0.005)
+plot(head(gro_sub, 30, by='lift'), method='graph')
+```
+It's not clear enough to see the rules that most make-sense.
+
+To get the rules that make sense:
+First, we may have the concept of "lift","support" and "confidence"
+Support: This measures how frequently the items in the rule appear together as a percentage of all transactions. For example, if the support for a rule {beer} -> {red wine} is 0.05, it means that 5% of all transactions contain beer and red wine together.
+
+Confidence: This measures the proportion of transactions containing the antecedent (left-hand-side) of the rule that also contain the consequent (right-hand-side). For example, if the confidence for a rule {beer} -> {red wine} is 0.6, it means that 60% of the transactions containing beer also contain red wine.
+
+Lift: This measures the strength of the association between the antecedent and the consequent, taking into account the support of both the antecedent and the consequent. A lift value of 1 indicates no association, while a value greater than 1 indicates a positive association, and a value less than 1 indicates a negative association. For example, if the lift for a rule {beer} -> {red wine} is 2.0, it means that beer are twice as likely to be purchased with red wine than they would be if there were no association between the items.
+
+First of all, sort the rules by confidence
+```{r}
+# sort the rules by confidence
+conf_rules <- sort(groceries_rules, by = "confidence", decreasing = TRUE)
+inspect(head(conf_rules))
+```
+The rhs with the highest confidence were all whole milk. That means the people who come to buy food at the groceries will tend to buy milk.
+
+Next, sort the rules by lift
+```{r}
+# sort by lift
+high_lift <- sort(groceries_rules, by = "lift", decreasing=TRUE) 
+arules::inspect(head(high_lift)) 
+```
+We can see good complements here: white bread and ham are very likely to be eaten together
+
+```{r}
+itemFrequencyPlot(groceries, topN = 10, type = "absolute", main = "Item Frequency")
+```
+while whole milk is the most frequent item, so the rules with whole milk may not have much informations because most people will buy it no matter they buy what other items.
+
+```{r}
+# plot all the rules in (support, confidence) space
+plot(groceries_rules)
+# can swap the axes and color scales
+plot(groceries_rules, measure = c("support", "lift"), shading = "confidence")
+```
+
+We can see that there is a negative correlation between support and lift.
+```{r}
+plot(groceries_rules, method='two-key plot')
+```
+
+```{r}
+sub_gro = subset(groceries_rules, subset=confidence > 0.01 & support > 0.005)
+saveAsGraph(sub_gro, file = "groceries_rules.graphml")
+```
+
+
+```{r}
+opti_sub = subset(groceries_rules, subset=confidence > 0.1 & support > 0.008 & lift > 3)
+inspect(opti_sub)
+```
+We want some more useful results, so we choose a relatively high confidence and support to include the item rules that are general and highly corralated 
+These rule contains the items that are relatively bought frequently and they have high relationship. 
+In these rules, we can even imagine the most popular dishes from these products. Like beef stew with potatoes, berries dipped in sour cream. But most of the rules are still not so interesting in my opinion, because they are too common.
+
+```{r}
+#lower the support, just like what we do the above
+other_sub = subset(groceries_rules, subset = confidence > 0.1 & support > 0.005 & lift > 3) 
+inspect(other_sub)
+```
+We can see if a person buys red wine, they are more likely to buy other wines. If a person buys vegetables, they are also more likely to buy other vegetables. This is the routine operation of a person who comes to the groceries with a purpose and a preference.
+There are also some interesting rules that can be treated as recipes: If someone buys rolls,buns and shopping bags, they are likely to buy sausage, and what we said above: beef and potato(root vegetable), Berries with sour cream, chocolate waffles...We can come up with recipes that people like to eat, according to these rules.
+
+
+
+
