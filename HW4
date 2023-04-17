@@ -1,0 +1,12 @@
+# Q2
+
+## Q2: Market segmentation
+
+### pre-process the data
+
+### data normalization
+
+In order to analyze the data intuitively, we first calculate the frequency of each category in every user's tweet so that the data can be normalized.
+
+http://127.0.0.1:55986/chunk_output/FDEC71DFE78BBEFA/F1994CE5/c4rgkd4bm9kds/000010.png
+
